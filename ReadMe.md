@@ -10,4 +10,8 @@ This is a python version of a tabletop game I previously designed, in which two 
 
 ## Skills Learned
 - Development of classes
-# baseball-card-game
+
+## real to-do list
+- add in walks
+- add in decision making, such as stolen bases
+- add in statistic lists

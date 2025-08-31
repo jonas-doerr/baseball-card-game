@@ -12,6 +12,7 @@ vis_score = 0
 home_score = 0
 outs = 0
 hit_types = ['single', 'double', 'triple', 'home run']
+bases = [None, None, None] #first, second, third
 
 def atbat():
     # Determine which team is batting
@@ -31,15 +32,19 @@ def atbat():
 
     # Roll for hit
     roll = random.random()
-    print(roll)
+    # print(roll)
     if roll < hit_chance:
         print("Hit!")
         hit_value = slugged(roll, current_batter, opposing_pitcher)
         print(hit_types[hit_value - 1])
-
+        advance_runners(hit_value, "Fred")
+        print(bases)
+        print(f"{vis_score} : {home_score}, {outs} out(s)")
         return True
     else:
         print("Out!")
+        print(f"{vis_score} : {home_score}, {outs} out(s)")
+        got_out()
         inning_over()
         return False
 
@@ -52,13 +57,17 @@ def steal():
     pass
 
 def inning_over():
-    global outs
+    global outs, batter_up_index, inning
     if outs >= 3:
         batter_up_index += 1
         if batter_up_index >= 2:
             batter_up_index = 0
+            inning += 1
         outs = 0
-        inning += 1
+        if batter_up_index == 0:
+            print(f"\nTop of {inning}")
+        else:
+            print(f"\nBottom of {inning}")
     return
 
 def got_out():
@@ -67,12 +76,15 @@ def got_out():
     return True
 
 def game_over():
+    global inning, home_score, vis_score
     if (inning > 9 and vis_score != home_score) or (inning >= 9 and batter_up_index == 1 and home_score > vis_score):
         print(f'Final score:\nVisitors {vis_score}\nHome {home_score}')
         inning = 1
         home_score = 0
         vis_score = 0
-    return
+        return False
+    else:
+        return True
 
 def slugged(random_roll, batter, pitcher):
     #if there's a hit, this function determines whether it's for extra bases
@@ -84,7 +96,7 @@ def slugged(random_roll, batter, pitcher):
     if random_roll <= slug_chance:
         #check for double, triple, or home run
         slug_roll = random.randint(0, 50)
-        print(slug_roll)
+        # print(slug_roll)
         if slug_roll > min(10, max(batter.batter_triples, 1)) + min(25, max(batter.batter_homers / 2, 1)):
             return 2
         elif slug_roll > min(25, max(batter.batter_homers / 2, 1)):
@@ -97,5 +109,36 @@ def struck_out():
     #if batter is out, this function determines whether it's a strikeout
     pass
 
+def score_run(runs):
+    global vis_score, home_score
+    if batter_up[batter_up_index] == batter_up_vis:
+        vis_score += runs
+    else:
+        home_score += runs
+    return
 
-atbat()
+def advance_runners(hit_value, batter):
+    global bases, vis_score, home_score
+    for i in reversed(range(3)): #easier to go 3rd to 1st
+        runner = bases[i]
+        if runner is not None:
+            new_base = i + hit_value
+            if new_base >= 3:
+                #Runner scores
+                score_run(1)
+            else:
+                bases[new_base] = runner
+        bases[i] = None
+    if hit_value < 4: #batter goes on base if not homer
+        bases[hit_value - 1] = batter
+    else:
+        score_run(1)
+
+def playing_game():
+    while game_over():
+    # while batter_up_index == 0:
+        atbat()
+
+
+# atbat()
+playing_game()
