@@ -11,6 +11,7 @@ inning = 1
 vis_score = 0
 home_score = 0
 outs = 0
+quit_game = False
 hit_types = ['single', 'double', 'triple', 'home run']
 bases = [None, None, None] #first, second, third
 
@@ -29,6 +30,7 @@ def atbat():
     # pitcher_effect = max(0.1, min(1.0, 5.0 - opposing_pitcher.pitcher_era) / 5.0)
     pitcher_hit_effect = max(min((opposing_pitcher.pitcher_whip - 1.29) * 0.2, 0.2), -0.7)
     hit_chance = current_batter.batter_batting_avg + pitcher_hit_effect
+    walk_chance = current_batter.batter_onbase + pitcher_hit_effect
 
     # Roll for hit
     roll = random.random()
@@ -38,6 +40,12 @@ def atbat():
         hit_value = slugged(roll, current_batter, opposing_pitcher)
         print(hit_types[hit_value - 1])
         advance_runners(hit_value, "Fred")
+        print(bases)
+        print(f"{vis_score} : {home_score}, {outs} out(s)")
+        return True
+    elif roll < walk_chance:
+        print("Walk.")
+        advance_runners(1, "Bobby", walk = True)
         print(bases)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         return True
@@ -57,13 +65,14 @@ def steal():
     pass
 
 def inning_over():
-    global outs, batter_up_index, inning
+    global outs, batter_up_index, inning, bases
     if outs >= 3:
         batter_up_index += 1
         if batter_up_index >= 2:
             batter_up_index = 0
             inning += 1
         outs = 0
+        bases = [None, None, None]
         if batter_up_index == 0:
             print(f"\nTop of {inning}")
         else:
@@ -73,11 +82,12 @@ def inning_over():
 def got_out():
     global outs 
     outs += 1
+    inning_over()
     return True
 
 def game_over():
     global inning, home_score, vis_score
-    if (inning > 9 and vis_score != home_score) or (inning >= 9 and batter_up_index == 1 and home_score > vis_score):
+    if (inning > 9 and vis_score > home_score) or (inning >= 9 and batter_up_index == 1 and home_score > vis_score):
         print(f'Final score:\nVisitors {vis_score}\nHome {home_score}')
         inning = 1
         home_score = 0
@@ -117,8 +127,8 @@ def score_run(runs):
         home_score += runs
     return
 
-def advance_runners(hit_value, batter):
-    global bases, vis_score, home_score
+def advance_runners(hit_value, batter, walk = False):
+    global bases, vis_score, home_score, quit_game
     for i in reversed(range(3)): #easier to go 3rd to 1st
         runner = bases[i]
         if runner is not None:
@@ -129,15 +139,49 @@ def advance_runners(hit_value, batter):
             else:
                 bases[new_base] = runner
         bases[i] = None
+    if walk is False and hit_value <= 2: #advancing the baserunner
+        if bases[2]:
+            chances = 100 - random.randint(0, 50)
+            advancing = input(f"Try for home? y/n/quit\n{chances}% chance of success\n")
+            if advancing == 'y':
+                roll = random.randint(1, 100)
+                if roll <= chances:
+                    score_run(1)
+                    bases[2] = None
+                    print("Safe at home!")
+                else:
+                    got_out()
+                    print("Out at home!")
+            if advancing == 'quit':
+                quit_game = True
+        if bases[1] and not bases[2]:
+            chances = 100 - random.randint(20, 75)
+            advancing = input(f"Try for third? y/n/quit\n{chances}% chance of success\n")
+            if advancing == 'y':
+                roll = random.randint(1, 100)
+                if roll <= chances:
+                    bases[2] = bases[1]
+                    bases[1] = None
+                    print("Safe at third!")
+                else:
+                    got_out()
+                    print("Out at third!")
+            if advancing == 'quit': 
+                quit_game = True
+
+
     if hit_value < 4: #batter goes on base if not homer
         bases[hit_value - 1] = batter
     else:
         score_run(1)
 
 def playing_game():
-    while game_over():
+    while game_over() and not quit_game:
     # while batter_up_index == 0:
         atbat()
+        continue_game = input("Press Enter to continue, q to quit")
+        if continue_game.lower() == 'q':
+            break
 
 
 # atbat()

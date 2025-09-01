@@ -12,6 +12,9 @@ This is a python version of a tabletop game I previously designed, in which two 
 - Development of classes
 
 ## real to-do list
-- add in walks
-- add in decision making, such as stolen bases
+- tie base advancement into batter characteristics
+    - add a name attribute to players
+    - create a calculation based off of stolen bases for speed
+    - when printing bases, only show the name attribute
+- add in stolen bases
 - add in statistic lists
