@@ -3,9 +3,11 @@ import player_creation
 
 lineup_one = player_creation.sample_lineup_one
 lineup_two = player_creation.sample_lineup_two
-batter_up_vis = lineup_one[0]
-batter_up_home = lineup_two[0]
-batter_up = [batter_up_vis, batter_up_home]
+batter_up_vis_index = 0
+batter_up_home_index = 0
+batter_up_vis = lineup_one
+batter_up_home = lineup_two
+batter_up = [batter_up_vis[batter_up_vis_index], batter_up_home[batter_up_home_index]]
 batter_up_index = 0
 inning = 1
 vis_score = 0
@@ -17,13 +19,15 @@ bases = [None, None, None] #first, second, third
 
 def atbat():
     # Determine which team is batting
+    global batter_up_vis_index, batter_up_home_index, batter_up
+    batter_up = [batter_up_vis[batter_up_vis_index], batter_up_home[batter_up_home_index]]
     current_batter = batter_up[batter_up_index]
     if batter_up_index == 0:
         # Visitors batting, home pitcher
-        opposing_pitcher = lineup_two[9]  # Adjust as needed for actual pitcher
+        opposing_pitcher = batter_up_home[9]  # Adjust as needed for actual pitcher
     else:
         # Home batting, visitor pitcher
-        opposing_pitcher = lineup_one[9]  # Adjust as needed for actual pitcher
+        opposing_pitcher = batter_up_vis[9]  # Adjust as needed for actual pitcher
 
     # Calculate hit probability (simple example: higher avg, lower ERA = more likely hit)
     # Normalize ERA to a 0-1 scale (lower ERA = better pitcher)
@@ -39,22 +43,41 @@ def atbat():
         print("Hit!")
         hit_value = slugged(roll, current_batter, opposing_pitcher)
         print(hit_types[hit_value - 1])
-        advance_runners(hit_value, "Fred")
-        print(bases)
+        advance_runners(hit_value, current_batter) #move runners along and add new
+        runners_on_base = [runner.name if runner else "None" for runner in bases]
+        print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
+        cycle_hitters()
         return True
     elif roll < walk_chance:
         print("Walk.")
-        advance_runners(1, "Bobby", walk = True)
-        print(bases)
+        advance_runners(1, current_batter, walk = True)
+        runners_on_base = [runner.name if runner else "None" for runner in bases]
+        print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
+        cycle_hitters()
         return True
     else:
         print("Out!")
-        print(f"{vis_score} : {home_score}, {outs} out(s)")
+        cycle_hitters()
         got_out()
+        print(f"{vis_score} : {home_score}, {outs} out(s)")
         inning_over()
         return False
+
+def cycle_hitters():
+    global batter_up_vis_index, batter_up_home_index
+    if batter_up_index == 0:
+        if batter_up_vis_index >= 8:
+            batter_up_vis_index = 0
+        else:
+            batter_up_vis_index += 1
+    if batter_up_index == 1:
+        if batter_up_home_index >= 8:
+            batter_up_home_index = 0
+        else:
+            batter_up_home_index += 1
+
 
 def can_steal():
     #allows the runner to steal if SB is high enough
@@ -121,7 +144,7 @@ def struck_out():
 
 def score_run(runs):
     global vis_score, home_score
-    if batter_up[batter_up_index] == batter_up_vis:
+    if batter_up_index == 0:
         vis_score += runs
     else:
         home_score += runs
@@ -141,7 +164,9 @@ def advance_runners(hit_value, batter, walk = False):
         bases[i] = None
     if walk is False and hit_value <= 2: #advancing the baserunner
         if bases[2]:
-            chances = 100 - random.randint(0, 50)
+            chances = min(95, 60 - random.randint(0, 50) + bases[2].speed * 5)
+            if outs == 2:
+                chances = min(95, chances + 15)
             advancing = input(f"Try for home? y/n/quit\n{chances}% chance of success\n")
             if advancing == 'y':
                 roll = random.randint(1, 100)
@@ -155,7 +180,9 @@ def advance_runners(hit_value, batter, walk = False):
             if advancing == 'quit':
                 quit_game = True
         if bases[1] and not bases[2]:
-            chances = 100 - random.randint(20, 75)
+            chances = min(95, 60 - random.randint(0, 50) + bases[1].speed * 5)
+            if outs == 2:
+                chances = min(95, chances + 15)
             advancing = input(f"Try for third? y/n/quit\n{chances}% chance of success\n")
             if advancing == 'y':
                 roll = random.randint(1, 100)
