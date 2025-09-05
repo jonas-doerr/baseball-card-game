@@ -1,5 +1,6 @@
 import random
 import player_creation
+import math
 
 lineup_one = player_creation.sample_lineup_one
 lineup_two = player_creation.sample_lineup_two
@@ -83,9 +84,30 @@ def can_steal():
     #allows the runner to steal if SB is high enough
     pass
 
-def steal():
+def steal(og_base): #insert INDEX of base (0-2) being stolen from
     #determines whether a stolen base is successful
-    pass
+    global bases
+    chances = min(65 - random.randint(0, 30) - (og_base * 15) + int(math.sqrt(bases[og_base].batter_stolenbases) * 5), 90)
+    steal_input = input(f"Steal Base {og_base + 2}? {chances}% chance of success. y/n")
+    if steal_input.lower() == "y":
+        roll = random.randint(0, 100)
+        if roll >= chances:
+            if og_base != 2:
+                bases[og_base + 1] = bases[og_base]
+                bases[og_base] = None
+            else:
+                bases[og_base] = None
+                score_run(1)
+            bases_names = [guy.name if guy else "None" for guy in bases]
+            print("Safe!")
+            return bases_names
+        else:
+            bases[og_base] = None
+            print("Caught Stealing!")
+            got_out()
+            return
+    else:
+        return
 
 def inning_over():
     global outs, batter_up_index, inning, bases
@@ -152,16 +174,30 @@ def score_run(runs):
 
 def advance_runners(hit_value, batter, walk = False):
     global bases, vis_score, home_score, quit_game
-    for i in reversed(range(3)): #easier to go 3rd to 1st
-        runner = bases[i]
-        if runner is not None:
-            new_base = i + hit_value
-            if new_base >= 3:
-                #Runner scores
-                score_run(1)
+    if walk is False:
+        for i in reversed(range(3)): #easier to go 3rd to 1st
+            runner = bases[i]
+            if runner is not None:
+                new_base = i + hit_value
+                if new_base >= 3:
+                    #Runner scores
+                    score_run(1)
+                else:
+                    bases[new_base] = runner
+            bases[i] = None
+    else:
+        advancing_walk_runners = 0
+        for i in range(3):
+            if bases[i] is None:
+                break
+            advancing_walk_runners += 1
+        for i in reversed(range(advancing_walk_runners)):
+            if i < 2:  
+                bases[i + 1] = bases[i]
+                bases[i] = None
             else:
-                bases[new_base] = runner
-        bases[i] = None
+                score_run(1)
+
     if walk is False and hit_value <= 2: #advancing the baserunner
         if bases[2]:
             chances = min(95, 60 - random.randint(0, 50) + bases[2].speed * 5)

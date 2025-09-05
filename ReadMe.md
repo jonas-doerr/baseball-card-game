@@ -12,10 +12,12 @@ This is a python version of a tabletop game I previously designed, in which two 
 - Development of classes
 
 ## real to-do list
-- fix base advancement for walks (only move when forced)
-- tie base advancement into batter characteristics
+- fix base advancement for walks (only move when forced) [DONE]
+- tie base advancement into batter characteristics [DONE]
     - add a name attribute to players [DONE]
     - create a calculation based off of stolen bases for speed [DONE]
     - when printing bases, only show the name attribute [DONE]
 - add in stolen bases
+    - function for stealing bases [DONE]
+    - conditions for when you can steal
 - add in statistic lists
