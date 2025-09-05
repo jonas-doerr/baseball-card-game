@@ -19,5 +19,5 @@ This is a python version of a tabletop game I previously designed, in which two 
     - when printing bases, only show the name attribute [DONE]
 - add in stolen bases
     - function for stealing bases [DONE]
-    - conditions for when you can steal
+    - conditions for when you can steal [DONE]
 - add in statistic lists

@@ -80,18 +80,32 @@ def cycle_hitters():
             batter_up_home_index += 1
 
 
-def can_steal():
+def can_steal(runner_list, outs, score_one, score_two):
     #allows the runner to steal if SB is high enough
-    pass
+    condition_of_steal = 0 # 0: no steal, 1:steal 2nd, 2: steal 3rd, 3: steal home
+    #4: steal 2nd and 3rd #5 steal 2nd or home
+    stealability = False
+    if runner_list[0] and not (runner_list[1]):
+        condition_of_steal = 1
+    elif runner_list[1] and not runner_list[2]:
+        condition_of_steal = 2
+    elif runner_list[2]:
+        condition_of_steal = 3
+    else:
+        return condition_of_steal, stealability
+    situation = runner_list[condition_of_steal - 1].speed - abs(score_one - score_two) + outs - condition_of_steal
+    if situation > 0:
+        stealability = True
+    return condition_of_steal, stealability
 
 def steal(og_base): #insert INDEX of base (0-2) being stolen from
     #determines whether a stolen base is successful
     global bases
-    chances = min(65 - random.randint(0, 30) - (og_base * 15) + int(math.sqrt(bases[og_base].batter_stolenbases) * 5), 90)
+    chances = min(65 - random.randint(0, 40) - (og_base * 20) + int(math.sqrt(bases[og_base].batter_stolenbases) * 5), 90)
     steal_input = input(f"Steal Base {og_base + 2}? {chances}% chance of success. y/n")
     if steal_input.lower() == "y":
         roll = random.randint(0, 100)
-        if roll >= chances:
+        if roll <= chances:
             if og_base != 2:
                 bases[og_base + 1] = bases[og_base]
                 bases[og_base] = None
@@ -100,6 +114,7 @@ def steal(og_base): #insert INDEX of base (0-2) being stolen from
                 score_run(1)
             bases_names = [guy.name if guy else "None" for guy in bases]
             print("Safe!")
+            print(bases_names)
             return bases_names
         else:
             bases[og_base] = None
@@ -242,9 +257,13 @@ def playing_game():
     while game_over() and not quit_game:
     # while batter_up_index == 0:
         atbat()
-        continue_game = input("Press Enter to continue, q to quit")
-        if continue_game.lower() == 'q':
-            break
+        steal_which_base, can_steal_a_base = can_steal(bases, outs, vis_score, home_score)
+        if not can_steal_a_base:
+            continue_game = input("Press Enter to continue, q to quit")
+            if continue_game.lower() == 'q':
+                break
+        else:
+            steal(steal_which_base - 1)
 
 
 # atbat()
