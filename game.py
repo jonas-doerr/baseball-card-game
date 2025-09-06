@@ -49,7 +49,7 @@ def atbat():
         print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         cycle_hitters()
-        return True
+        return "Hit! " + hit_types[hit_value - 1]
     elif roll < walk_chance:
         print("Walk.")
         advance_runners(1, current_batter, walk = True)
@@ -57,14 +57,14 @@ def atbat():
         print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         cycle_hitters()
-        return True
+        return "Walk."
     else:
         print("Out!")
         cycle_hitters()
         got_out()
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         inning_over()
-        return False
+        return "Out!"
 
 def cycle_hitters():
     global batter_up_vis_index, batter_up_home_index

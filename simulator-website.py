@@ -11,6 +11,8 @@ if "vis_score" not in st.session_state:
     st.session_state.vis_score = game.vis_score
 if "home_score" not in st.session_state:
     st.session_state.home_score = game.home_score
+if "bases" not in st.session_state:
+    st.session_state.home_score = game.bases
 
 def base_graphic(bases):
     # bases: [first, second, third]
@@ -65,18 +67,32 @@ if show_lineups:
     pitcher2_df["pitcher_whip"] = pitcher2_df["pitcher_whip"].apply(lambda x: f"{x:.2f}")
     st.write(pitcher2_df)
 
+
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    if st.button("Play Next At-Bat"):
+        result = game.atbat()
+        # Update session state if needed, e.g.:
+        st.session_state.outs = game.outs
+        st.session_state.inning = game.inning
+        st.session_state.vis_score = game.vis_score
+        st.session_state.home_score = game.home_score
+        st.session_state.bases = game.bases
+        st.write(f"Result: {result}")
+with col2:
+    if st.button("Reset Game"):
+        # your code here
+        pass
+with col3:
+    if st.button("Steal"):
+        pass
+with col4:
+    if st.button("Extra Base"):
+        pass
+
 show_bases = st.checkbox("Show Bases", value=True)
 if show_bases:
     base_graphic(game.bases)
-
-if st.button("Play Next At-Bat"):
-    result = game.atbat()
-    # Update session state if needed, e.g.:
-    st.session_state.outs = game.outs
-    st.session_state.inning = game.inning
-    st.session_state.vis_score = game.vis_score
-    st.session_state.home_score = game.home_score
-    st.write(f"Result: {result}")
 
 # Display scores and outs
 st.write(f"Inning: {st.session_state.inning}")
