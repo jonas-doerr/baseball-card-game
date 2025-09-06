@@ -12,6 +12,7 @@ This is a python version of a tabletop game I previously designed, in which two 
 - Development of classes
 
 ## real to-do list
+- develop into a website where the game is playable
 - fix base advancement for walks (only move when forced) [DONE]
 - tie base advancement into batter characteristics [DONE]
     - add a name attribute to players [DONE]
@@ -21,3 +22,5 @@ This is a python version of a tabletop game I previously designed, in which two 
     - function for stealing bases [DONE]
     - conditions for when you can steal [DONE]
 - add in statistic lists
+- add fatigue for pitchers
+- add player substitution
