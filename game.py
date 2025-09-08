@@ -146,12 +146,13 @@ def got_out():
     return True
 
 def game_over():
-    global inning, home_score, vis_score
+    global inning, home_score, vis_score, bases
     if (inning > 9 and vis_score > home_score) or (inning >= 9 and batter_up_index == 1 and home_score > vis_score):
         print(f'Final score:\nVisitors {vis_score}\nHome {home_score}')
         inning = 1
         home_score = 0
         vis_score = 0
+        bases = [None, None, None]
         return False
     else:
         return True

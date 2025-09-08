@@ -1,26 +1,25 @@
 # Baseball Card Game Simulator
 This is a python version of a tabletop game I previously designed, in which two teams create a lineup of baseball cards to face off.
 
-## Todo
+## priority to-do list
+- develop into a website where the game is playable
+    - currently the website is super slow - fix that
+    - also, the advance bases function is not working
+    - when those two things are fixed, try allowing the player to change the stats of the batters and pitchers
+
+## Goals
 - Create the ability to input lineups with statistics
 - Save previously inputted players for future games
-- Create gameplay mechanics through random number generators and player statistics
+- Create gameplay mechanics through random number generators and player statistics [DONE]
 - Record player statistics and include a leaderboard
 - Develop into an app or website using the streamlit package
 
 ## Skills Learned
-- Development of classes
+- how to use classes, global variables, list manipulation, and a lot more nit-picky stuff
+- basic development with streamlit
+- using basic math formulas to create a sports simulation
 
-## real to-do list
-- develop into a website where the game is playable
-- fix base advancement for walks (only move when forced) [DONE]
-- tie base advancement into batter characteristics [DONE]
-    - add a name attribute to players [DONE]
-    - create a calculation based off of stolen bases for speed [DONE]
-    - when printing bases, only show the name attribute [DONE]
-- add in stolen bases
-    - function for stealing bases [DONE]
-    - conditions for when you can steal [DONE]
+## not priority to-do list
 - add in statistic lists
 - add fatigue for pitchers
 - add player substitution
