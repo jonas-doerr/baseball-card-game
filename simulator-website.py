@@ -143,39 +143,31 @@ with col3:
         if st.session_state.get("can_steal_a_base", False):
             steal(st.session_state.get("steal_which_base", 1) - 1)
             hit_value = 0
-with col4:
-    if hit_value > 0:   
-        if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]):
-            chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[2].speed * 5)
-            if st.session_state.outs == 2:
-                chances = min(95, chances + 15)
-            st.write(f"Try for home?\n{chances}% chance of success")
-        if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2]:
-            chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[1].speed * 5)
-            if st.session_state.outs == 2:
-                chances = min(95, chances + 15)
-            st.write(f"Try for third?\n{chances}% chance of success")
-        if st.button("Extra Base"):
-            if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]): 
-                roll = random.randint(1, 100)
-                if roll <= chances:
-                    game.score_run(1)
-                    st.session_state.bases[2] = None
-                    st.write("Safe at home!")
-                else:
-                    game.got_out()
-                    st.write("Out at home!")
-                    st.session_state.bases[2] = None
-            if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2]:
-                roll = random.randint(1, 100)
-                if roll <= chances:
-                    st.session_state.bases[2] = st.session_state.bases[1]
-                    st.session_state.bases[1] = None
-                    st.write("Safe at third!")
-                else:
-                    game.got_out()
-                    st.write("Out at third!")
-                    st.session_state.bases[1] = None
+with col4:  
+    st.session_state.bases = game.bases
+    if "extra_chances" not in st.session_state:
+        st.session_state.extra_chances = 0
+    if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]) and hit_value > 0:
+        st.session_state.extra_chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[2].speed * 5)
+        if st.session_state.outs == 2:
+            st.session_state.extra_chances = min(95, st.session_state.extra_chances + 15)
+        st.write(f"Try for home?\n{st.session_state.extra_chances}% chance of success")
+        st.write(f"Debug: speed={st.session_state.bases[2]}, extra_chances={st.session_state.extra_chances}")
+    if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2] and hit_value > 0:
+        st.session_state.extra_chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[1].speed * 5)
+        if st.session_state.outs == 2:
+            st.session_state.extra_chances = min(95, st.session_state.extra_chances + 15)
+        st.write(f"Try for third?\n{st.session_state.extra_chances}% chance of success")
+        st.write(f"Debug: speed={st.session_state.bases[1]}, extra_chances={st.session_state.extra_chances}")
+    if st.button("Extra Base"):
+        advancing_result = game.st_advance_runners(hit_value, st.session_state.extra_chances)
+        st.write(f"Debug: extra_chances={st.session_state.extra_chances}")
+        if advancing_result:   
+            st.write(advancing_result)
+        st.session_state.bases = game.bases
+        st.session_state.outs = game.outs
+        st.session_state.vis_score = game.vis_score
+        st.session_state.home_score = game.home_score
 
 show_bases = st.checkbox("Show Bases", value=True)
 if show_bases:
