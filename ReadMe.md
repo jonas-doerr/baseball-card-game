@@ -4,7 +4,7 @@ This is a python version of a tabletop game I previously designed, in which two 
 ## priority to-do list
 - develop into a website where the game is playable
     - currently the website is super slow - fix that
-    - also, the advance bases function is not working
+    - also, the advance bases function is not working [fixed except logic is running through game.py instead]
     - when those two things are fixed, try allowing the player to change the stats of the batters and pitchers
 
 ## Goals

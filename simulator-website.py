@@ -112,10 +112,11 @@ col1, col2, col3, col4 = st.columns(4)
 steal_which_base = 0
 can_steal_a_base = False
 chances = 0
+hit_value = 0
 
 with col1:
     if st.button("Play Next At-Bat "): 
-        result = game.atbat()
+        result, hit_value = game.atbat()
         can_steal_a_base = False
         # Update session state if needed, e.g.:
         st.session_state.outs = game.outs
@@ -135,16 +136,46 @@ with col1:
             st.session_state.chances = 0
 
 with col2:
-    if st.button("Reset Game"):
-        # your code here
+    if st.button("Reset Game"): #start the game over
         restart_game()
 with col3:
     if st.button("Steal"):
         if st.session_state.get("can_steal_a_base", False):
             steal(st.session_state.get("steal_which_base", 1) - 1)
+            hit_value = 0
 with col4:
-    if st.button("Extra Base"):
-        pass
+    if hit_value > 0:   
+        if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]):
+            chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[2].speed * 5)
+            if st.session_state.outs == 2:
+                chances = min(95, chances + 15)
+            st.write(f"Try for home?\n{chances}% chance of success")
+        if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2]:
+            chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[1].speed * 5)
+            if st.session_state.outs == 2:
+                chances = min(95, chances + 15)
+            st.write(f"Try for third?\n{chances}% chance of success")
+        if st.button("Extra Base"):
+            if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]): 
+                roll = random.randint(1, 100)
+                if roll <= chances:
+                    game.score_run(1)
+                    st.session_state.bases[2] = None
+                    st.write("Safe at home!")
+                else:
+                    game.got_out()
+                    st.write("Out at home!")
+                    st.session_state.bases[2] = None
+            if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2]:
+                roll = random.randint(1, 100)
+                if roll <= chances:
+                    st.session_state.bases[2] = st.session_state.bases[1]
+                    st.session_state.bases[1] = None
+                    st.write("Safe at third!")
+                else:
+                    game.got_out()
+                    st.write("Out at third!")
+                    st.session_state.bases[1] = None
 
 show_bases = st.checkbox("Show Bases", value=True)
 if show_bases:

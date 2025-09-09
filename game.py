@@ -17,10 +17,12 @@ outs = 0
 quit_game = False
 hit_types = ['single', 'double', 'triple', 'home run']
 bases = [None, None, None] #first, second, third
+can_advance_base = False
 
 def atbat():
     # Determine which team is batting
-    global batter_up_vis_index, batter_up_home_index, batter_up
+    global batter_up_vis_index, batter_up_home_index, batter_up, can_advance_base
+    can_advance_base = False
     batter_up = [batter_up_vis[batter_up_vis_index], batter_up_home[batter_up_home_index]]
     current_batter = batter_up[batter_up_index]
     if batter_up_index == 0:
@@ -49,7 +51,7 @@ def atbat():
         print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         cycle_hitters()
-        return "Hit! " + hit_types[hit_value - 1]
+        return "Hit! " + hit_types[hit_value - 1], hit_value
     elif roll < walk_chance:
         print("Walk.")
         advance_runners(1, current_batter, walk = True)
@@ -57,14 +59,14 @@ def atbat():
         print(runners_on_base)
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         cycle_hitters()
-        return "Walk."
+        return "Walk.", 0
     else:
         print("Out!")
         cycle_hitters()
         got_out()
         print(f"{vis_score} : {home_score}, {outs} out(s)")
         inning_over()
-        return "Out!"
+        return f"{current_batter.name} is out!", 0
 
 def cycle_hitters():
     global batter_up_vis_index, batter_up_home_index
@@ -189,7 +191,7 @@ def score_run(runs):
     return
 
 def advance_runners(hit_value, batter, walk = False):
-    global bases, vis_score, home_score, quit_game
+    global bases, vis_score, home_score, quit_game, can_advance_base
     if walk is False:
         for i in reversed(range(3)): #easier to go 3rd to 1st
             runner = bases[i]
@@ -214,39 +216,40 @@ def advance_runners(hit_value, batter, walk = False):
             else:
                 score_run(1)
 
-    if walk is False and hit_value <= 2: #advancing the baserunner
-        if bases[2]:
-            chances = min(95, 60 - random.randint(0, 50) + bases[2].speed * 5)
-            if outs == 2:
-                chances = min(95, chances + 15)
-            advancing = input(f"Try for home? y/n/quit\n{chances}% chance of success\n")
-            if advancing == 'y':
-                roll = random.randint(1, 100)
-                if roll <= chances:
-                    score_run(1)
-                    bases[2] = None
-                    print("Safe at home!")
-                else:
-                    got_out()
-                    print("Out at home!")
-            if advancing == 'quit':
-                quit_game = True
-        if bases[1] and not bases[2]:
-            chances = min(95, 60 - random.randint(0, 50) + bases[1].speed * 5)
-            if outs == 2:
-                chances = min(95, chances + 15)
-            advancing = input(f"Try for third? y/n/quit\n{chances}% chance of success\n")
-            if advancing == 'y':
-                roll = random.randint(1, 100)
-                if roll <= chances:
-                    bases[2] = bases[1]
-                    bases[1] = None
-                    print("Safe at third!")
-                else:
-                    got_out()
-                    print("Out at third!")
-            if advancing == 'quit': 
-                quit_game = True
+    # if walk is False and hit_value <= 2: #advancing the baserunner
+    #     can_advance_base = True
+    #     if bases[2]:
+    #         chances = min(95, 60 - random.randint(0, 50) + bases[2].speed * 5)
+    #         if outs == 2:
+    #             chances = min(95, chances + 15)
+    #         advancing = input(f"Try for home? y/n/quit\n{chances}% chance of success\n")
+    #         if advancing == 'y':
+    #             roll = random.randint(1, 100)
+    #             if roll <= chances:
+    #                 score_run(1)
+    #                 bases[2] = None
+    #                 print("Safe at home!")
+    #             else:
+    #                 got_out()
+    #                 print("Out at home!")
+    #         if advancing == 'quit':
+    #             quit_game = True
+    #     if bases[1] and not bases[2]:
+    #         chances = min(95, 60 - random.randint(0, 50) + bases[1].speed * 5)
+    #         if outs == 2:
+    #             chances = min(95, chances + 15)
+    #         advancing = input(f"Try for third? y/n/quit\n{chances}% chance of success\n")
+    #         if advancing == 'y':
+    #             roll = random.randint(1, 100)
+    #             if roll <= chances:
+    #                 bases[2] = bases[1]
+    #                 bases[1] = None
+    #                 print("Safe at third!")
+    #             else:
+    #                 got_out()
+    #                 print("Out at third!")
+    #         if advancing == 'quit': 
+    #             quit_game = True
 
 
     if hit_value < 4: #batter goes on base if not homer
