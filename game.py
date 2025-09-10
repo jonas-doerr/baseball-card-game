@@ -198,21 +198,21 @@ def st_advance_runners(hit_value, chances):
             if roll <= chances:
                 score_run(1)
                 bases[2] = None
-                return "Safe at home!" + str(roll) + " " + str(chances)
+                return "Safe at home!"
             else:
                 got_out()
                 bases[2] = None
-                return "Out at home!" + str(roll) + " " + str(chances)
+                return "Out at home!"
         if bases[1] and not bases[2] and hit_value == 1:
             roll = random.randint(1, 100)
             if roll <= chances:
                 bases[2] = bases[1]
                 bases[1] = None
-                return "Safe at third!" + str(roll) + " " + str(chances)
+                return "Safe at third!"
             else:
                 got_out()
                 bases[1] = None
-                return "Out at third!" + str(roll) + " " + str(chances)
+                return "Out at third!"
 
 def advance_runners(hit_value, batter, walk = False):
     global bases, vis_score, home_score, quit_game, can_advance_base

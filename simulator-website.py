@@ -3,6 +3,7 @@ import game
 import pandas as pd
 import random
 import math
+import player_creation
 
 # Initialize session state for game variables
 if "outs" not in st.session_state:
@@ -73,6 +74,10 @@ def steal(og_base): #insert INDEX of base (0-2) being stolen from
         st.write("Caught Stealing!")
         game.got_out()
         return
+    
+def game_over():
+    game.game_over()
+    # st.write(f"Final Score: {st.session_state.vis_score}:{st.session_state.home_score}")
 
 st.title("Baseball Card Game Simulator")
 st.write("Here is a place to simulate baseball card games online and track statistics.")
@@ -81,31 +86,80 @@ show_lineups = st.checkbox("Show Lineups", value=True)
 if show_lineups:
     #batters and pitchers for visiting team
     desired_order = ["name", "position", "batter_batting_avg", "batter_onbase", "batter_slugging", "batter_triples", "batter_homers", "batter_stolenbases"]
-    batters_df = pd.DataFrame([vars(player) for player in game.lineup_one[:9]])[desired_order]
-    batters_df["batter_batting_avg"] = batters_df["batter_batting_avg"].apply(lambda x: f"{x:.3f}")
-    batters_df["batter_onbase"] = batters_df["batter_onbase"].apply(lambda x: f"{x:.3f}")
-    batters_df["batter_slugging"] = batters_df["batter_slugging"].apply(lambda x: f"{x:.3f}")
+
+    if "lineup_one_df" not in st.session_state:
+        st.session_state.lineup_one_df = pd.DataFrame([vars(player) for player in game.lineup_one[:9]])[desired_order]
+
+    # Display batters
+    batters_df = st.session_state.lineup_one_df.copy()
+    # Optional: format floats for display only
+    for col in ["batter_batting_avg", "batter_onbase", "batter_slugging"]:
+        batters_df[col] = batters_df[col].apply(lambda x: f"{x:.3f}")
     st.write("Lineup One:")
     st.write(batters_df)
+
+    # Make the pitcher
+    # if "vis_pitcher" not in st.session_state:
+    #     st.session_state.vis_pitcher = game.lineup_one[9]
     desired_order_pitchers = ["name", "pitcher_games_pitched", "pitcher_innings", "pitcher_era", "pitcher_whip", "pitcher_strikeouts"]
-    pitcher1_df = pd.DataFrame([vars(game.lineup_one[9])])[desired_order_pitchers]
-    pitcher1_df["pitcher_era"] = pitcher1_df["pitcher_era"].apply(lambda x: f"{x:.2f}")
-    pitcher1_df["pitcher_whip"] = pitcher1_df["pitcher_whip"].apply(lambda x: f"{x:.2f}")
-    st.write(pitcher1_df)
+    if "pitcher1_df" not in st.session_state:
+        st.session_state.pitcher1_df = pd.DataFrame([vars(game.lineup_one[9])])[desired_order_pitchers]
+    edited_pitcher1_df = st.data_editor(
+        st.session_state.pitcher1_df, 
+        key = "pitcher1_editor",
+        column_config={
+            "pitcher_games_pitched": st.column_config.NumberColumn("Games Pitched", min_value = 1, max_value = 200, step = 1),
+            "pitcher_era": st.column_config.NumberColumn("ERA", min_value = 0.00, max_value = 100.00, step = 0.01),
+            "pitcher_whip": st.column_config.NumberColumn("WHIP",min_value = 0.00,max_value = 3.00,step = 0.01)
+        })
+    st.session_state.pitcher1_df = edited_pitcher1_df
+
+    row = edited_pitcher1_df.iloc[0]
+    st.session_state.vis_pitcher = player_creation.pitcher(
+        float(row["pitcher_era"]),
+        float(row["pitcher_whip"]),
+        int(row["pitcher_strikeouts"]),
+        int(row["pitcher_games_pitched"]),
+        float(row["pitcher_innings"]),
+        row["name"]
+    )
+    game.batter_up_vis[9] = st.session_state.vis_pitcher
 
     #home team
+    if "lineup_two_df" not in st.session_state:
+        st.session_state.lineup_two_df = pd.DataFrame([vars(player) for player in game.lineup_two[:9]])[desired_order]
+
+    batters2_df = st.session_state.lineup_two_df.copy()
+    for col in ["batter_batting_avg", "batter_onbase", "batter_slugging"]:
+        batters2_df[col] = batters2_df[col].apply(lambda x: f"{x:.3f}")
     st.write("Lineup Two:")
-    # st.write(pd.DataFrame([vars(player) for player in game.lineup_two[:9]]))
-    # st.write(pd.DataFrame([vars(game.lineup_two[9])]))
-    batters2_df = pd.DataFrame([vars(player) for player in game.lineup_two[:9]])[desired_order]
-    batters2_df["batter_batting_avg"] = batters2_df["batter_batting_avg"].apply(lambda x: f"{x:.3f}")
-    batters2_df["batter_onbase"] = batters2_df["batter_onbase"].apply(lambda x: f"{x:.3f}")
-    batters2_df["batter_slugging"] = batters2_df["batter_slugging"].apply(lambda x: f"{x:.3f}")
     st.write(batters2_df)
-    pitcher2_df = pd.DataFrame([vars(game.lineup_two[9])])[desired_order_pitchers]
-    pitcher2_df["pitcher_era"] = pitcher2_df["pitcher_era"].apply(lambda x: f"{x:.2f}")
-    pitcher2_df["pitcher_whip"] = pitcher2_df["pitcher_whip"].apply(lambda x: f"{x:.2f}")
-    st.write(pitcher2_df)
+    #home team pitchers
+    if "pitcher2_df" not in st.session_state:
+        st.session_state.pitcher2_df = pd.DataFrame([vars(game.lineup_two[9])])[desired_order_pitchers]
+
+    edited_pitcher2_df = st.data_editor(
+        st.session_state.pitcher2_df,
+        key="pitcher2_editor",
+        column_config={
+            "pitcher_games_pitched": st.column_config.NumberColumn("Games Pitched", min_value=1, max_value=200, step=1),
+            "pitcher_era": st.column_config.NumberColumn("ERA", min_value=0.00, max_value=100.00, step=0.01),
+            "pitcher_whip": st.column_config.NumberColumn("WHIP", min_value=0.00, max_value=3.00, step=0.01),
+        }
+    )
+
+    st.session_state.pitcher2_df = edited_pitcher2_df
+
+    row2 = edited_pitcher2_df.iloc[0]
+    st.session_state.home_pitcher = player_creation.pitcher(
+        float(row2["pitcher_era"]),
+        float(row2["pitcher_whip"]),
+        int(row2["pitcher_strikeouts"]),
+        int(row2["pitcher_games_pitched"]),
+        float(row2["pitcher_innings"]),
+        row2["name"]
+    )
+    game.batter_up_home[9] = st.session_state.home_pitcher
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -152,16 +206,13 @@ with col4:
         if st.session_state.outs == 2:
             st.session_state.extra_chances = min(95, st.session_state.extra_chances + 15)
         st.write(f"Try for home?\n{st.session_state.extra_chances}% chance of success")
-        st.write(f"Debug: speed={st.session_state.bases[2]}, extra_chances={st.session_state.extra_chances}")
     if st.session_state.bases[1] and st.session_state.bases[0] and not st.session_state.bases[2] and hit_value > 0:
         st.session_state.extra_chances = min(95, 60 - random.randint(0, 50) + st.session_state.bases[1].speed * 5)
         if st.session_state.outs == 2:
             st.session_state.extra_chances = min(95, st.session_state.extra_chances + 15)
         st.write(f"Try for third?\n{st.session_state.extra_chances}% chance of success")
-        st.write(f"Debug: speed={st.session_state.bases[1]}, extra_chances={st.session_state.extra_chances}")
     if st.button("Extra Base"):
         advancing_result = game.st_advance_runners(hit_value, st.session_state.extra_chances)
-        st.write(f"Debug: extra_chances={st.session_state.extra_chances}")
         if advancing_result:   
             st.write(advancing_result)
         st.session_state.bases = game.bases
@@ -178,4 +229,5 @@ top_bottom = ["Top", "Bottom"]
 st.session_state.batter_up_index = game.batter_up_index
 st.write(f"Inning: {top_bottom[st.session_state.batter_up_index]} of {st.session_state.inning}")
 st.write(f"Outs: {st.session_state.outs}")
+game_over()
 st.write(f"Score: Visitors {st.session_state.vis_score} - Home {st.session_state.home_score}")
