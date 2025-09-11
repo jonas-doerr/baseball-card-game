@@ -17,6 +17,35 @@ if "home_score" not in st.session_state:
 if "bases" not in st.session_state:
     st.session_state.home_score = game.bases
 
+def dynamic_input_data_editor(data, key, **_kwargs):
+    """
+    Wraps streamlit's data_editor to fix issue where the first edit doesn't persist.
+    """
+    changed_key = f'{key}__changed_flag'
+    initial_data_key = f'{key}__initial_data'
+
+    def on_data_editor_changed():
+        if 'on_change' in _kwargs:
+            args = _kwargs.get('args', ())
+            kwargs = _kwargs.get('kwargs', {})
+            _kwargs['on_change'](*args, **kwargs)
+        st.session_state[changed_key] = True
+
+    # If we have recorded that the editor changed previously, re-use the initial data
+    if changed_key in st.session_state and st.session_state[changed_key]:
+        data_to_pass = st.session_state.get(initial_data_key, data)
+        # Reset the flag so we go back to normal behavior
+        st.session_state[changed_key] = False
+    else:
+        data_to_pass = data
+        st.session_state[initial_data_key] = data
+
+    # Use the same key, but force on_change so we can capture that we edited
+    _editor_kwargs = _kwargs.copy()
+    _editor_kwargs.update({'data': data_to_pass, 'key': key, 'on_change': on_data_editor_changed})
+
+    return st.data_editor(**_editor_kwargs)
+
 def base_graphic(bases):
     # bases: [first, second, third]
     # Use emojis for bases and show runner names if present
@@ -91,7 +120,7 @@ if show_lineups:
     if "lineup_one_df" not in st.session_state:
         st.session_state.lineup_one_df = pd.DataFrame([vars(player) for player in game.lineup_one[:9]])[desired_order]
 
-    st.session_state.lineup_one_df = st.data_editor(
+    st.session_state.lineup_one_df = dynamic_input_data_editor(
         st.session_state.lineup_one_df,
         key="batter1_editor",
         hide_index=True,
@@ -124,7 +153,7 @@ if show_lineups:
     desired_order_pitchers = ["name", "pitcher_games_pitched", "pitcher_innings", "pitcher_era", "pitcher_whip", "pitcher_strikeouts"]
     if "pitcher1_df" not in st.session_state:
         st.session_state.pitcher1_df = pd.DataFrame([vars(game.lineup_one[9])])[desired_order_pitchers]
-    edited_pitcher1_df = st.data_editor(
+    edited_pitcher1_df = dynamic_input_data_editor(
         st.session_state.pitcher1_df, 
         key = "pitcher1_editor",
         column_config={
@@ -149,7 +178,7 @@ if show_lineups:
     if "lineup_two_df" not in st.session_state:
         st.session_state.lineup_two_df = pd.DataFrame([vars(player) for player in game.lineup_two[:9]])[desired_order]
 
-    st.session_state.edited_batters2_df = st.data_editor(
+    st.session_state.edited_batters2_df = dynamic_input_data_editor(
         st.session_state.lineup_two_df,
         key = "batter2_editor",
         hide_index = True,
@@ -182,7 +211,7 @@ if show_lineups:
     if "pitcher2_df" not in st.session_state:
         st.session_state.pitcher2_df = pd.DataFrame([vars(game.lineup_two[9])])[desired_order_pitchers]
 
-    edited_pitcher2_df = st.data_editor(
+    edited_pitcher2_df = dynamic_input_data_editor(
         st.session_state.pitcher2_df,
         key="pitcher2_editor",
         column_config={

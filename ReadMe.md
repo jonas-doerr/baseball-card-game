@@ -7,6 +7,7 @@ Play the game on the website: [Here!](https://baseball-card-simulator.streamlit.
     - currently the website is super slow - fix that [FIXED]
     - also, the advance bases function is not working [IT WORKS!!!]
     - when those two things are fixed, try allowing the player to change the stats of the batters and pitchers
+    - annoying bug where stats did not immediately change when inputted [FIXED]
 
 ## Goals
 - Create the ability to input lineups with statistics
