@@ -1,5 +1,6 @@
 # Baseball Card Game Simulator
 This is a python version of a tabletop game I previously designed, in which two teams create a lineup of baseball cards to face off.
+Play the game on the website: [Here!](https://baseball-card-simulator.streamlit.app/)
 
 ## priority to-do list
 - develop into a website where the game is playable

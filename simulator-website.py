@@ -85,22 +85,42 @@ st.write("Here is a place to simulate baseball card games online and track stati
 show_lineups = st.checkbox("Show Lineups", value=True)
 if show_lineups:
     #batters and pitchers for visiting team
+    st.write("Lineup One:")
     desired_order = ["name", "position", "batter_batting_avg", "batter_onbase", "batter_slugging", "batter_triples", "batter_homers", "batter_stolenbases"]
 
     if "lineup_one_df" not in st.session_state:
         st.session_state.lineup_one_df = pd.DataFrame([vars(player) for player in game.lineup_one[:9]])[desired_order]
 
-    # Display batters
-    batters_df = st.session_state.lineup_one_df.copy()
-    # Optional: format floats for display only
-    for col in ["batter_batting_avg", "batter_onbase", "batter_slugging"]:
-        batters_df[col] = batters_df[col].apply(lambda x: f"{x:.3f}")
-    st.write("Lineup One:")
-    st.write(batters_df)
+    st.session_state.lineup_one_df = st.data_editor(
+        st.session_state.lineup_one_df,
+        key="batter1_editor",
+        hide_index=True,
+        column_config={
+            "batter_batting_avg": st.column_config.NumberColumn("AVG", min_value=0.000, max_value=1.000, step=0.001, format="%.3f"),
+            "batter_onbase": st.column_config.NumberColumn("OBP", min_value=0.000, max_value=1.000, step=0.001, format="%.3f"),
+            "batter_slugging": st.column_config.NumberColumn("SLG", min_value=0.000, max_value=4.000, step=0.001, format="%.3f"),
+            "batter_homers": st.column_config.NumberColumn("HR", min_value=0, max_value=100, step=1),
+            "batter_stolenbases": st.column_config.NumberColumn("SB", min_value=0, max_value=200, step=1),
+            "batter_triples": st.column_config.NumberColumn("3B", min_value=0, max_value=100, step=1)
+        }
+    )
+
+    st.session_state.lineup_one = []
+    for _, row in st.session_state.lineup_one_df.iterrows():
+        st.session_state.lineup_one.append(player_creation.batter(
+            float(row["batter_batting_avg"]),
+            float(row["batter_slugging"]),
+            int(row["batter_stolenbases"]),
+            int(row["batter_homers"]),
+            float(row["batter_onbase"]),
+            5,
+            int(row["batter_triples"]),
+            row["position"],
+            row["name"]
+        ))
+    game.batter_up_vis[:9] = st.session_state.lineup_one
 
     # Make the pitcher
-    # if "vis_pitcher" not in st.session_state:
-    #     st.session_state.vis_pitcher = game.lineup_one[9]
     desired_order_pitchers = ["name", "pitcher_games_pitched", "pitcher_innings", "pitcher_era", "pitcher_whip", "pitcher_strikeouts"]
     if "pitcher1_df" not in st.session_state:
         st.session_state.pitcher1_df = pd.DataFrame([vars(game.lineup_one[9])])[desired_order_pitchers]
@@ -129,11 +149,35 @@ if show_lineups:
     if "lineup_two_df" not in st.session_state:
         st.session_state.lineup_two_df = pd.DataFrame([vars(player) for player in game.lineup_two[:9]])[desired_order]
 
-    batters2_df = st.session_state.lineup_two_df.copy()
-    for col in ["batter_batting_avg", "batter_onbase", "batter_slugging"]:
-        batters2_df[col] = batters2_df[col].apply(lambda x: f"{x:.3f}")
-    st.write("Lineup Two:")
-    st.write(batters2_df)
+    st.session_state.edited_batters2_df = st.data_editor(
+        st.session_state.lineup_two_df,
+        key = "batter2_editor",
+        hide_index = True,
+        column_config = {
+            "batter_batting_avg": st.column_config.NumberColumn("AVG", min_value = 0.000, max_value = 1.000, step = 0.001),
+            "batter_onbase": st.column_config.NumberColumn("OBP", min_value = 0.000, max_value = 1.000, step = 0.001),
+            "batter_slugging": st.column_config.NumberColumn("SLG", min_value = 0.000, max_value = 4.000, step = 0.001),
+            "batter_homers": st.column_config.NumberColumn("HR", min_value = 0, max_value = 100, step = 1),
+            "batter_stolenbases": st.column_config.NumberColumn("SB", min_value = 0, max_value = 200, step = 1),
+            "batter_triples": st.column_config.NumberColumn("3B", min_value = 0, max_value = 100, step = 1)
+        }
+    )
+    st.session_state.lineup_two_df = st.session_state.edited_batters2_df
+
+    st.session_state.lineup_two = []
+    for _, row in st.session_state.edited_batters2_df.iterrows():
+        st.session_state.lineup_two.append(player_creation.batter(
+            float(row["batter_batting_avg"]),
+            float(row["batter_slugging"]),
+            int(row["batter_stolenbases"]),
+            int(row["batter_homers"]),
+            float(row["batter_onbase"]),
+            5,
+            int(row["batter_triples"]),
+            row["position"],
+            row["name"]
+        ))
+    game.batter_up_home[:9] = st.session_state.lineup_two
     #home team pitchers
     if "pitcher2_df" not in st.session_state:
         st.session_state.pitcher2_df = pd.DataFrame([vars(game.lineup_two[9])])[desired_order_pitchers]
