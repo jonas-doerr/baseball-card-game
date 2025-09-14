@@ -49,7 +49,7 @@ sample_lineup_one = [batter(.250, .300, 20, 30, .400, 5, 6, 'CF', "Jackson Chour
 
 sample_lineup_two = [batter(.250, .300, 30, 30, .400, 5, 6, 'CF', "Willie Mays"), 
                      batter(.250, .300, 15, 30, .400, 5, 6, 'LF', "Joe Dimaggio"), 
-                     batter(.250, .300, 1, 30, .400, 5, 6, 'RF', "Babe Ruth"), 
+                     batter(.250, .300, 1, 60, .400, 5, 6, 'RF', "Babe Ruth"), 
                      batter(.250, .300, 4, 30, .400, 5, 6, '1B', "Lou Gehrig"), 
                      batter(.250, .300, 14, 30, .400, 5, 6, '2B', "Rickie Weeks"),
                      batter(.250, .300, 10, 30, .400, 5, 6, '3B', "Robinson Cano"),

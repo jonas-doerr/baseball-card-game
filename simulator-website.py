@@ -261,6 +261,7 @@ with col1:
             st.write(f"Steal Base {steal_which_base + 1}? {st.session_state.chances}% chance of success.")
         else:
             st.session_state.chances = 0
+        st.session_state.able_to_advance = True
 
 with col2:
     if st.button("Reset Game"): #start the game over
@@ -272,6 +273,8 @@ with col3:
             hit_value = 0
 with col4:  
     st.session_state.bases = game.bases
+    if "able_to_advance" not in st.session_state:
+        st.session_state.able_to_advance = False
     if "extra_chances" not in st.session_state:
         st.session_state.extra_chances = 0
     if st.session_state.bases[2] and (st.session_state.bases[1] or st.session_state.bases[0]) and hit_value > 0:
@@ -285,9 +288,15 @@ with col4:
             st.session_state.extra_chances = min(95, st.session_state.extra_chances + 15)
         st.write(f"Try for third?\n{st.session_state.extra_chances}% chance of success")
     if st.button("Extra Base"):
-        advancing_result = game.st_advance_runners(hit_value, st.session_state.extra_chances)
-        if advancing_result:   
-            st.write(advancing_result)
+        if st.session_state.able_to_advance is True:  
+            advancing_result = game.st_advance_runners(hit_value, st.session_state.extra_chances)
+            if advancing_result:   
+                st.write(advancing_result)
+                if advancing_result == "Safe at third!" or "Out at third!":
+                    st.session_state.able_to_advance = False
+                if (advancing_result == "Safe at home" or "Out at home!") and game.bases[1] and hit_value == 1:
+                    st.write(f"Try for third?\n{st.session_state.extra_chances}% chance of success")
+                    st.session_state.able_to_advance = True
         st.session_state.bases = game.bases
         st.session_state.outs = game.outs
         st.session_state.vis_score = game.vis_score

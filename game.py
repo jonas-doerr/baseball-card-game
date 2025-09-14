@@ -148,13 +148,14 @@ def got_out():
     return True
 
 def game_over():
-    global inning, home_score, vis_score, bases
+    global inning, home_score, vis_score, bases, batter_up_index
     if (inning > 9 and vis_score > home_score) or (inning >= 9 and batter_up_index == 1 and home_score > vis_score):
         print(f'Final score:\nVisitors {vis_score}\nHome {home_score}')
         inning = 1
         home_score = 0
         vis_score = 0
         bases = [None, None, None]
+        batter_up_index = 0
         return False
     else:
         return True
@@ -203,7 +204,7 @@ def st_advance_runners(hit_value, chances):
                 got_out()
                 bases[2] = None
                 return "Out at home!"
-        if bases[1] and not bases[2] and hit_value == 1:
+        elif bases[1]:
             roll = random.randint(1, 100)
             if roll <= chances:
                 bases[2] = bases[1]
@@ -213,6 +214,8 @@ def st_advance_runners(hit_value, chances):
                 got_out()
                 bases[1] = None
                 return "Out at third!"
+        else:
+            return "Cannot advance now"
 
 def advance_runners(hit_value, batter, walk = False):
     global bases, vis_score, home_score, quit_game, can_advance_base
